@@ -1,0 +1,44 @@
+name: safesyncv2
+description: "A new Flutter project."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: '>=3.3.1 <4.0.0'
+
+dependencies:
+  flutter_svg: ^2.0.5
+  flutter:
+    sdk: flutter
+  shared_preferences: ^2.0.13
+  http: ^1.2.1
+  cupertino_icons: ^1.0.2
+  flutter_map: ^6.1.0
+  image_picker: ^0.8.4+4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/logo - splashscreen.png
+    - assets/images/logo - loginpage.png
+    - assets/images/logo - application.png
+    - assets/images/logo - splash.svg
+    - assets/images/background - loginpage.png
+    - assets/images/background - design1.png
+    - assets/images/background - design2.png
+    - assets/images/background - design3.png
+    - assets/images/background - design4.png
+    - assets/images/logo - department1.png
+    - assets/images/logo - department2.png
+    - assets/images/logo - department3.png
+  fonts:
+    - family: Poppins
+      fonts:
+        - asset: fonts/Poppins-Light.ttf
+        - asset: fonts/Poppins-Medium.ttf
+        - asset: fonts/Poppins-Bold.ttf
