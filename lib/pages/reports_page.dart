@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'reports_details.dart'; // Ensure to import the new file
+import 'dart:async'; // Import the dart:async package for Timer
 
 class ReportsHistory extends StatefulWidget {
   @override
@@ -12,14 +12,28 @@ class _ReportsHistoryState extends State<ReportsHistory> {
   List<Report> _reports = [];
   bool _isLoading = true;
   String? _errorMessage;
+  Timer? _timer; // Timer for automatic refresh
 
   @override
   void initState() {
     super.initState();
     _fetchReports();
+
+    // Set up a timer to automatically refresh reports every minute (60000 milliseconds)
+    _timer = Timer.periodic(Duration(minutes: 1), (Timer t) => _fetchReports());
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel(); // Cancel the timer when the widget is disposed
+    super.dispose();
   }
 
   Future<void> _fetchReports() async {
+    setState(() {
+      _isLoading = true; // Show loading indicator
+    });
+
     try {
       final response = await http.get(Uri.parse('https://kayegm.helioho.st/reports.php'));
 
@@ -45,103 +59,100 @@ class _ReportsHistoryState extends State<ReportsHistory> {
 
   @override
   Widget build(BuildContext context) {
-  return Scaffold(
-    body: Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Center(
-            child: Text(
-              'Your Recent Reports',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w400,
-                color: Colors.black87,
-              ),
-            ),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Your Recent Reports', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: Colors.black54),),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.refresh),
+            onPressed: _fetchReports, // Manual refresh on button press
           ),
-          const SizedBox(height: 16), // Add some space between the header and the list
-          Expanded(
-            child: _isLoading
-                ? const Center(
-                    child: CircularProgressIndicator(),
-                  )
-                : _errorMessage != null
-                    ? Center(
-                        child: Text(
-                          _errorMessage!,
-                          style: const TextStyle(
-                            color: Colors.red,
-                            fontSize: 16,
-                          ),
-                        ),
-                      )
-                    : _reports.isEmpty
-                        ? const Center(
-                            child: Text(
-                              'No reports available',
-                              style: TextStyle(
-                                fontSize: 18,
-                                color: Colors.grey,
-                              ),
+        ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 16), // Add some space between the header and the list
+            Expanded(
+              child: _isLoading
+                  ? const Center(
+                      child: CircularProgressIndicator(),
+                    )
+                  : _errorMessage != null
+                      ? Center(
+                          child: Text(
+                            _errorMessage!,
+                            style: const TextStyle(
+                              color: Colors.red,
+                              fontSize: 16,
                             ),
-                          )
-                        : ListView.builder(
-                            itemCount: _reports.length,
-                            itemBuilder: (context, index) {
-                              Report report = _reports[index];
-                              return Container(
-                                padding: const EdgeInsets.all(16),
-                                margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(8.0),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey.withOpacity(0.1),
-                                      spreadRadius: 1,
-                                      blurRadius: 3,
-                                      offset: Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: ListTile(
-                                  contentPadding: EdgeInsets.zero,
-                                  title: Text(
-                                    report.title,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                  subtitle: Text(
-                                    _formatDate(report.date),
-                                    style: const TextStyle(
-                                      color: Colors.black54,
-                                    ),
-                                  ),
-                                  trailing: Icon(Icons.chevron_right, color: Colors.grey),
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => ReportDetails(report: report),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              );
-                            },
                           ),
-              ),
-            ],
-          ),
+                        )
+                      : _reports.isEmpty
+                          ? const Center(
+                              child: Text(
+                                'No reports available',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            )
+                          : ListView.builder(
+                              itemCount: _reports.length,
+                              itemBuilder: (context, index) {
+                                Report report = _reports[index];
+                                return Container(
+                                  padding: const EdgeInsets.all(16),
+                                  margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(8.0),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.grey.withOpacity(0.1),
+                                        spreadRadius: 1,
+                                        blurRadius: 3,
+                                        offset: Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: ListTile(
+                                    contentPadding: EdgeInsets.zero,
+                                    title: Text(
+                                      report.title,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 18,
+                                      ),
+                                    ),
+                                    subtitle: Text(
+                                      _formatDate(report.date),
+                                      style: const TextStyle(
+                                        color: Colors.black54,
+                                      ),
+                                    ),
+                                    trailing: Icon(Icons.chevron_right, color: Colors.grey),
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => ReportDetails(report: report),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                );
+                              },
+                            ),
+            ),
+          ],
         ),
-      );
-    }
-
-
+      ),
+    );
+  }
 
   String _formatDate(String date) {
     DateTime dateTime = DateTime.parse(date);
@@ -199,6 +210,38 @@ class Report {
       id: json['report_id'] ?? 0,
       description: json['description'] ?? 'No description',
       date: json['date_time'] ?? '',
+    );
+  }
+}
+
+class ReportDetails extends StatelessWidget {
+  final Report report;
+
+  ReportDetails({required this.report});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(report.title),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              report.description,
+              style: TextStyle(fontSize: 16),
+            ),
+            SizedBox(height: 16),
+            Text(
+              'Reported on: ${report.date}',
+              style: TextStyle(color: Colors.grey),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
